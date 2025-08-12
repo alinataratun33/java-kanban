@@ -2,9 +2,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Manager {
-    private final HashMap<Integer, Task> tasks;
-    private final HashMap<Integer, Epic> epics;
-    private final HashMap<Integer, SubTask> subTasks;
+    private HashMap<Integer, Task> tasks;
+    private HashMap<Integer, Epic> epics;
+    private HashMap<Integer, SubTask> subTasks;
     private int count;
 
     public Manager() {
@@ -83,6 +83,7 @@ public class Manager {
         subTasks.clear();
         for (Epic epic : epics.values()) {
             epic.clearSubTasks();
+            updateEpicStatus(epic);
         }
     }
 
@@ -92,25 +93,16 @@ public class Manager {
     }
 
     public Task getTaskById(int id) {
-        if (tasks.containsKey(id)) {
-            return tasks.get(id);
-        }
-        return null;
+        return tasks.get(id);
     }
 
 
     public SubTask getSubTaskById(int id) {
-        if (subTasks.containsKey(id)) {
-            return subTasks.get(id);
-        }
-        return null;
+        return subTasks.get(id);
     }
 
     public Epic getEpicById(int id) {
-        if (epics.containsKey(id)) {
-            return epics.get(id);
-        }
-        return null;
+        return epics.get(id);
     }
 
 
@@ -178,16 +170,20 @@ public class Manager {
     }
 
 
-    public ArrayList<SubTask> getSubTasksForEpic(Epic epic) {
-        ArrayList<SubTask> result = new ArrayList<>();
+    public ArrayList<SubTask> getSubTasksForEpic(int epicId) {
+        Epic epic = epics.get(epicId);
 
-        for (Integer subTaskId : epic.getSubTaskIds()) {
-            SubTask subTask = subTasks.get(subTaskId);
-            if (subTask != null) {
-                result.add(subTask);
+        ArrayList<SubTask> result = new ArrayList<>();
+        if (epic != null) {
+            for (Integer subTaskId : epic.getSubTaskIds()) {
+                SubTask subTask = subTasks.get(subTaskId);
+                if (subTask != null) {
+                    result.add(subTask);
+                }
             }
         }
         return result;
+
     }
 
     private void updateEpicStatus(Epic epic) {
