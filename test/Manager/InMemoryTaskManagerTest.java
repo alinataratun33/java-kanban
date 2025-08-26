@@ -1,3 +1,6 @@
+package Manager;
+
+import Tasks.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +28,7 @@ class InMemoryTaskManagerTest {
 
     private Task createTestTask() {
         return new Task(
-                "Task",
+                "Tasks",
                 "Описание",
                 Status.NEW
         );
@@ -33,7 +36,7 @@ class InMemoryTaskManagerTest {
 
     private Epic createTestEpic() {
         return new Epic(
-                "Epic",
+                "Task.Task.Epic",
                 "Описание",
                 Status.NEW
         );
@@ -41,7 +44,7 @@ class InMemoryTaskManagerTest {
 
     private SubTask createTestSubTask(int epicId) {
         return new SubTask(
-                "SubTask",
+                "Task.SubTask",
                 "Описание",
                 Status.NEW,
                 epicId

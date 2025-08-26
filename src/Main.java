@@ -1,3 +1,11 @@
+import Manager.HistoryManager;
+import Manager.Managers;
+import Manager.TaskManager;
+import Tasks.Status;
+import Tasks.SubTask;
+import Tasks.Task;
+import Tasks.Epic;
+
 
 public class Main {
 
@@ -101,7 +109,7 @@ public class Main {
 
 
         System.out.println("\nИстория просмотров:");
-        for (Task task : historyManager.getHistory()) {
+        for (Task task : manager.getHistory()) {
             System.out.println(task);
         }
     }
