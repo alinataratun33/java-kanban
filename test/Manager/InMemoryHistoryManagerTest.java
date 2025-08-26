@@ -1,9 +1,11 @@
 package Manager;
 
+import Tasks.Status;
 import Tasks.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,7 +31,7 @@ class InMemoryHistoryManagerTest {
 
         historyManager.add(updateTask);
 
-        ArrayList<Task> history = historyManager.getHistory();
+        List<Task> history = historyManager.getHistory();
 
         Task firstVersion = history.getFirst();
         Task updateVersion = history.getLast();
