@@ -1,6 +1,6 @@
-package Manager;
+package manager;
 
-import Tasks.Task;
+import tasks.Task;
 
 public class Node {
     public Task task;
