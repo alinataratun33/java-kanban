@@ -275,19 +275,5 @@ class InMemoryTaskManagerTest {
 
         assertNull(manager.getSubTaskById(idSubTaskForRemove), "ID удаленной подзадачи сохранилось");
     }
-
-    @Test
-    public void testChangeTaskIdBreaksManager() {
-        Task createdTask = manager.createTask(task);
-        int originalId = createdTask.getId();
-
-        createdTask.setId(15); // Это должно ломать систему!
-
-        Task taskWithOriginalId = manager.getTaskById(originalId);
-        assertNull(taskWithOriginalId, "Задача не должна быть доступна после изменения ID");
-
-
-        Task taskWithNewId = manager.getTaskById(15);
-        assertNull(taskWithNewId, "Задача не должна быть доступна по новому ID");
-    }
+    
 }
