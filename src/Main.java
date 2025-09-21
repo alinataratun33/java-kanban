@@ -25,39 +25,35 @@ public class Main {
         Epic epic3 = manager.createEpic(new Epic("Эпик3", "Описание", Status.NEW));
 
         SubTask subTaskForUpdate = manager.createSubTask(new SubTask("Подзадача1", "Описание",
-                Status.NEW, 4));
+                Status.NEW, 5));
         SubTask subTaskForRemove = manager.createSubTask(new SubTask("Подзадача2", "Описание",
                 Status.NEW, 6));
         SubTask subTask3 = manager.createSubTask(new SubTask("Подзадача3", "Описание",
                 Status.NEW, 6));
 
-        manager.getEpicById(6);
-        manager.getEpicById(6);
-        manager.getEpicById(6);
-        manager.getEpicById(6);
+
         manager.getEpicById(5);
-        manager.getEpicById(6);
-        manager.getEpicById(6);
-        manager.getEpicById(6);
-        manager.getEpicById(6);
-        manager.getEpicById(6);
         manager.getTaskById(1);
-        manager.getSubTaskById(7);
+        manager.getEpicById(6);
+        manager.getEpicById(6);
+        manager.getTaskById(2);
+        manager.getSubTaskById(9);
+        manager.getEpicById(5);
 
 
         updateTask(manager, taskForUpdate);
         updateSubTask(manager, subTaskForUpdate);
-        updateEpic(manager,epicForUpdate);
+        updateEpic(manager, epicForUpdate);
 
         removeTaskById(manager);
 
-        printAllTasks(manager,historyManager);
+        printAllTasks(manager, historyManager);
         removeAllTasks(manager);
     }
 
     private static void removeTaskById(TaskManager manager) {
         manager.removeTaskById(2);
-        manager.removeEpicById(5);
+        manager.removeEpicById(6);
         manager.removeSubTaskById(8);
     }
 
@@ -78,10 +74,11 @@ public class Main {
 
     private static void updateSubTask(TaskManager manager, SubTask subTask) {
         SubTask updateSubTask = new SubTask("Измененная подзадача", "Описание изменено",
-                Status.IN_PROGRESS,4);
+                Status.IN_PROGRESS, 4);
         updateSubTask.setId(subTask.getId());
         manager.updateSubTask(updateSubTask);
     }
+
     private static void updateTask(TaskManager manager, Task task) {
         Task updateTask = new Task("Измененная задача", "Описание изменено", Status.IN_PROGRESS);
         updateTask.setId(task.getId());
@@ -106,7 +103,6 @@ public class Main {
         for (Task subtask : manager.getAllSubTasks()) {
             System.out.println(subtask);
         }
-
 
         System.out.println("\nИстория просмотров:");
         for (Task task : manager.getHistory()) {

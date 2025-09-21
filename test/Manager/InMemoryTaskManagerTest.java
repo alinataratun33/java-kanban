@@ -161,7 +161,7 @@ class InMemoryTaskManagerTest {
         Epic createdEpic = manager.createEpic(epic);
         SubTask originalSubTask = manager.createSubTask(createTestSubTask(createdEpic.getId()));
         SubTask updateSubTask = new SubTask("Измененная подзадача", "Измененное описание",
-                Status.DONE,1);
+                Status.DONE, 1);
         updateSubTask.setId(originalSubTask.getId());
         manager.updateSubTask(updateSubTask);
         SubTask subTaskAfterUpdate = manager.getSubTaskById(2);
@@ -257,5 +257,37 @@ class InMemoryTaskManagerTest {
         assertEquals(subTaskAfterAdding.getEpicId(), originalEpicId, "ID не совпадают");
     }
 
+    @Test
+    void testEpicDoNotContainIrrelevantSubtasksIDs() {
+        Epic createdEpic = manager.createEpic(epic);
+        SubTask subTaskForRemove = manager.createSubTask(createTestSubTask(createdEpic.getId()));
+        manager.removeSubTaskById(subTaskForRemove.getId());
 
+        assertEquals(0, createdEpic.getSubTaskIds().size(), "Эпик содержит неактуальные id подзадач");
+    }
+
+    @Test
+    void testRemoveSubTaskId() {
+        Epic createdEpic = manager.createEpic(epic);
+        SubTask subTaskForRemove = manager.createSubTask(createTestSubTask(createdEpic.getId()));
+        int idSubTaskForRemove = subTaskForRemove.getId();
+        manager.removeSubTaskById(idSubTaskForRemove);
+
+        assertNull(manager.getSubTaskById(idSubTaskForRemove), "ID удаленной подзадачи сохранилось");
+    }
+
+    @Test
+    public void testChangeTaskIdBreaksManager() {
+        Task createdTask = manager.createTask(task);
+        int originalId = createdTask.getId();
+
+        createdTask.setId(15); // Это должно ломать систему!
+
+        Task taskWithOriginalId = manager.getTaskById(originalId);
+        assertNull(taskWithOriginalId, "Задача не должна быть доступна после изменения ID");
+
+
+        Task taskWithNewId = manager.getTaskById(15);
+        assertNull(taskWithNewId, "Задача не должна быть доступна по новому ID");
+    }
 }
