@@ -275,5 +275,5 @@ class InMemoryTaskManagerTest {
 
         assertNull(manager.getSubTaskById(idSubTaskForRemove), "ID удаленной подзадачи сохранилось");
     }
-    
+
 }
