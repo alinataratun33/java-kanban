@@ -1,9 +1,9 @@
-package Manager;
+package manager;
 
-import Tasks.Epic;
-import Tasks.Status;
-import Tasks.SubTask;
-import Tasks.Task;
+import tasks.Epic;
+import tasks.Status;
+import tasks.SubTask;
+import tasks.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +31,7 @@ class InMemoryTaskManagerTest {
 
     private Task createTestTask() {
         return new Task(
-                "Tasks",
+                "tasks",
                 "Описание",
                 Status.NEW
         );
@@ -161,7 +161,7 @@ class InMemoryTaskManagerTest {
         Epic createdEpic = manager.createEpic(epic);
         SubTask originalSubTask = manager.createSubTask(createTestSubTask(createdEpic.getId()));
         SubTask updateSubTask = new SubTask("Измененная подзадача", "Измененное описание",
-                Status.DONE,1);
+                Status.DONE, 1);
         updateSubTask.setId(originalSubTask.getId());
         manager.updateSubTask(updateSubTask);
         SubTask subTaskAfterUpdate = manager.getSubTaskById(2);
@@ -257,5 +257,23 @@ class InMemoryTaskManagerTest {
         assertEquals(subTaskAfterAdding.getEpicId(), originalEpicId, "ID не совпадают");
     }
 
+    @Test
+    void testEpicDoNotContainIrrelevantSubtasksIDs() {
+        Epic createdEpic = manager.createEpic(epic);
+        SubTask subTaskForRemove = manager.createSubTask(createTestSubTask(createdEpic.getId()));
+        manager.removeSubTaskById(subTaskForRemove.getId());
+
+        assertEquals(0, createdEpic.getSubTaskIds().size(), "Эпик содержит неактуальные id подзадач");
+    }
+
+    @Test
+    void testRemoveSubTaskId() {
+        Epic createdEpic = manager.createEpic(epic);
+        SubTask subTaskForRemove = manager.createSubTask(createTestSubTask(createdEpic.getId()));
+        int idSubTaskForRemove = subTaskForRemove.getId();
+        manager.removeSubTaskById(idSubTaskForRemove);
+
+        assertNull(manager.getSubTaskById(idSubTaskForRemove), "ID удаленной подзадачи сохранилось");
+    }
 
 }
