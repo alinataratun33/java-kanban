@@ -1,7 +1,5 @@
 package tasks;
 
-import manager.TypeTask;
-
 import java.util.ArrayList;
 import java.util.List;
 
