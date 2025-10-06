@@ -19,7 +19,6 @@ public class Main {
         Epic epic = manager1.createEpic(new Epic("Эпик1", "Описание", Status.NEW));
         SubTask subTask = manager1.createSubTask(new SubTask("Подзадача1", "Описание",
                 Status.NEW, 2));
-        
         FileBackedTaskManager manager2 = FileBackedTaskManager.loadFromFile(file);
 
         print(manager2);
