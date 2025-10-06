@@ -1,7 +1,4 @@
 import manager.FileBackedTaskManager;
-import manager.HistoryManager;
-import manager.Managers;
-import manager.TaskManager;
 import tasks.Status;
 import tasks.SubTask;
 import tasks.Task;
@@ -17,15 +14,12 @@ public class Main {
 
         File file = new File("C:\\Users\\MyPC\\Desktop\\tasks.csv");
 
-        // Создаем менеджер и добавляем задачи
         FileBackedTaskManager manager1 = new FileBackedTaskManager(file);
         Task task = manager1.createTask(new Task("Задача1", "Описание", Status.NEW));
         Epic epic = manager1.createEpic(new Epic("Эпик1", "Описание", Status.NEW));
         SubTask subTask = manager1.createSubTask(new SubTask("Подзадача1", "Описание",
                 Status.NEW, 2));
-
-
-        // Загружаем из файла
+        
         FileBackedTaskManager manager2 = FileBackedTaskManager.loadFromFile(file);
 
         print(manager2);
