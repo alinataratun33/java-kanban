@@ -1,5 +1,7 @@
 package tasks;
 
+import manager.TypeTask;
+
 import java.util.Objects;
 
 public class Task {
@@ -59,9 +61,13 @@ public class Task {
         return Objects.hash(getName(), getDescription(), getId(), getStatus());
     }
 
+    public TypeTask getType() {
+        return TypeTask.TASK;
+    }
+
     @Override
     public String toString() {
-        return String.format("%d,TASK,%s,%s,%s",
-                id, name, status, description);
+        return String.format("%d,%s,%s,%s,%s",
+                id, getType(), name, status, description);
     }
 }

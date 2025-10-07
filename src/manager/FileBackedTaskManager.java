@@ -8,7 +8,7 @@ import tasks.Task;
 import java.io.*;
 import java.nio.file.Files;
 
-public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
+public class FileBackedTaskManager extends InMemoryTaskManager {
     final File file;
 
     public FileBackedTaskManager(File file) {
@@ -138,6 +138,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
 
     public static FileBackedTaskManager loadFromFile(File file) {
 
+        int maxId = 0;
+
         FileBackedTaskManager manager = new FileBackedTaskManager(file);
         if (!file.exists()) {
             return manager;
@@ -147,14 +149,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
             String[] lines = tasksInFile.split("\n");
             for (int i = 1; i < lines.length; i++) {
                 Task task = fromString(lines[i]);
-                if (task instanceof Epic) {
-                    manager.createEpic((Epic) task);
-                } else if (task instanceof SubTask) {
-                    manager.createSubTask((SubTask) task);
-                } else {
-                    manager.createTask(task);
+                if (task != null) {
+                    manager.addTaskFromFile(task);
+                    if (task.getId() > maxId) {
+                        maxId = task.getId();
+                    }
                 }
             }
+            manager.setCount(maxId);
         } catch (IOException e) {
             throw new ManagerSaveException("Не удалось получить информацию из файла");
         }

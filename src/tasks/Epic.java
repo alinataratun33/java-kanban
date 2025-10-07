@@ -1,7 +1,10 @@
 package tasks;
 
+import manager.TypeTask;
+
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class Epic extends Task {
 
@@ -39,9 +42,13 @@ public class Epic extends Task {
         }
     }
 
+    public TypeTask getType() {
+        return TypeTask.EPIC;
+    }
+
     @Override
     public String toString() {
-        return String.format("%d,EPIC,%s,%s,%s",
-                id, name, status, description);
+        return String.format("%d,%s,%s,%s,%s",
+                id, getType(), name, status, description);
     }
 }
