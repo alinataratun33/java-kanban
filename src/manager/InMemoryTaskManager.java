@@ -26,6 +26,10 @@ public class InMemoryTaskManager implements TaskManager {
         count = 0;
     }
 
+    protected void setCount(int count) {
+        this.count = count;
+    }
+
     private int generateId() {
         count++;
         return count;
@@ -270,7 +274,33 @@ public class InMemoryTaskManager implements TaskManager {
             epic.setStatus(Status.IN_PROGRESS);
         }
     }
+
+    protected void addTaskFromFile(Task task) {
+        switch (task.getType()) {
+            case EPIC:
+                Epic epic = (Epic) task;
+                epics.put(epic.getId(), epic);
+                epic.clearSubTasks();
+                break;
+            case SUBTASK:
+                SubTask subTask = (SubTask) task;
+                if (epics.containsKey(subTask.getEpicId())) {
+                    subTasks.put(subTask.getId(), subTask);
+                    Epic epicWithSubTask = epics.get(subTask.getEpicId());
+                    if (epicWithSubTask != null) {
+                        epicWithSubTask.addSubTaskId(subTask.getId());
+                    }
+                }
+                break;
+            case TASK:
+                tasks.put(task.getId(), task);
+                break;
+        }
+    }
+
+
 }
+
 
 
 
