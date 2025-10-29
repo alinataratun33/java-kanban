@@ -248,8 +248,8 @@ public class InMemoryTaskManager implements TaskManager {
 
         return epic.getSubTaskIds().stream()
                 .map(subTasks::get)
-                .filter(Objects::nonNull).
-                collect(Collectors.toList());
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @Override
