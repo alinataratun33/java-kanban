@@ -13,61 +13,68 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryHistoryManagerTest {
     private HistoryManager historyManager;
-    private TaskManager manager;
 
     @BeforeEach
     public void setUp() {
-        historyManager = Managers.getDefaultHistory();
-        manager = Managers.getDefault();
+        historyManager = new InMemoryHistoryManager();
     }
 
     @Test
     public void shouldReturnEmptyHistoryWhenNoTasksViewed() {
         List<Task> history = historyManager.getHistory();
+        for (Task task : history) {
+            System.out.println(task);
+        }
         assertTrue(history.isEmpty(), "История должна быть пустой при инициализации");
     }
 
     @Test
     public void addTaskInHistory() {
-        Task task = manager.createTask(new Task("Задача", "Описание", Status.NEW,
-                Duration.ofMinutes(30), LocalDateTime.of(2025, 11,29, 15, 0)));
-        manager.getTaskById(task.getId());
+        Task task = new Task("Задача", "Описание", Status.NEW,
+                Duration.ofMinutes(30), LocalDateTime.of(2025, 11, 29, 15, 0));
+        historyManager.add(task);
 
         assertEquals(1, historyManager.getHistory().size(), "Задача не была добавлена в историю");
     }
 
     @Test
     public void removeTaskFromBeginning() {
-        Task taskFirst = manager.createTask(new Task("Задача", "Описание", Status.NEW,
-                Duration.ofMinutes(30), LocalDateTime.of(2025, 11,29, 15, 0)));
-        Task taskSecond = manager.createTask(new Task("Задача", "Описание", Status.NEW,
-                Duration.ofMinutes(30), LocalDateTime.of(2025, 11,28, 15, 0)));
+        Task taskFirst = new Task("Задача", "Описание", Status.NEW,
+                Duration.ofMinutes(30), LocalDateTime.of(2025, 11, 29, 15, 0));
+        taskFirst.setId(1);
+        Task taskSecond = new Task("Задача", "Описание", Status.NEW,
+                Duration.ofMinutes(30), LocalDateTime.of(2025, 11, 28, 15, 0));
+        taskSecond.setId(2);
 
         historyManager.add(taskFirst);
         historyManager.add(taskSecond);
 
-        historyManager.remove(taskFirst.getId());
+        historyManager.remove(1);
 
 
         List<Task> history = historyManager.getHistory();
+
         assertEquals(1, history.size(), "Задача не была удалена из истории");
         assertFalse(history.contains(taskFirst), "История не должна содержать удаленную задачу");
     }
 
     @Test
     public void removeTaskFromMiddle() {
-        Task taskFirst = manager.createTask(new Task("Задача", "Описание", Status.NEW,
-                Duration.ofMinutes(30), LocalDateTime.of(2025, 11,29, 15, 0)));
-        Task taskSecond = manager.createTask(new Task("Задача", "Описание", Status.NEW,
-                Duration.ofMinutes(30), LocalDateTime.of(2025, 11,28, 15, 0)));
-        Task task = manager.createTask(new Task("Задача", "Описание", Status.NEW,
-                Duration.ofMinutes(30), LocalDateTime.of(2025, 11,27, 15, 0)));
+        Task taskFirst = new Task("Задача", "Описание", Status.NEW,
+                Duration.ofMinutes(30), LocalDateTime.of(2025, 11, 29, 15, 0));
+        taskFirst.setId(1);
+        Task taskSecond = new Task("Задача", "Описание", Status.NEW,
+                Duration.ofMinutes(30), LocalDateTime.of(2025, 11, 28, 15, 0));
+        taskSecond.setId(2);
+        Task task = new Task("Задача", "Описание", Status.NEW,
+                Duration.ofMinutes(30), LocalDateTime.of(2025, 11, 27, 15, 0));
+        task.setId(3);
 
         historyManager.add(taskFirst);
         historyManager.add(taskSecond);
         historyManager.add(task);
 
-        historyManager.remove(taskSecond.getId());
+        historyManager.remove(2);
 
 
         List<Task> history = historyManager.getHistory();
@@ -77,16 +84,18 @@ class InMemoryHistoryManagerTest {
 
     @Test
     public void removeTaskFromMEnd() {
-        Task taskFirst = manager.createTask(new Task("Задача", "Описание", Status.NEW,
-                Duration.ofMinutes(30), LocalDateTime.of(2025, 11,29, 15, 0)));
+        Task taskFirst = new Task("Задача", "Описание", Status.NEW,
+                Duration.ofMinutes(30), LocalDateTime.of(2025, 11, 29, 15, 0));
+        taskFirst.setId(1);
 
-        Task taskSecond = manager.createTask(new Task("Задача", "Описание", Status.NEW,
-                Duration.ofMinutes(30), LocalDateTime.of(2025, 11,27, 15, 0)));
+        Task taskSecond = new Task("Задача", "Описание", Status.NEW,
+                Duration.ofMinutes(30), LocalDateTime.of(2025, 11, 27, 15, 0));
+        taskSecond.setId(2);
 
         historyManager.add(taskFirst);
         historyManager.add(taskSecond);
 
-        historyManager.remove(taskSecond.getId());
+        historyManager.remove(2);
 
 
         List<Task> history = historyManager.getHistory();
@@ -96,10 +105,10 @@ class InMemoryHistoryManagerTest {
 
     @Test
     public void removeDuplicateViews() {
-        Task task = manager.createTask(new Task("Задача", "Описание", Status.NEW,
-                Duration.ofMinutes(30), LocalDateTime.of(2025, 11,29, 15, 0)));
-        manager.getTaskById(task.getId());
-        manager.getTaskById(task.getId());
+        Task task = new Task("Задача", "Описание", Status.NEW,
+                Duration.ofMinutes(30), LocalDateTime.of(2025, 11, 29, 15, 0));
+        historyManager.add(task);
+        historyManager.add(task);
 
         assertEquals(1, historyManager.getHistory().size(), "Повторный просмотр не был удален");
     }
@@ -107,14 +116,14 @@ class InMemoryHistoryManagerTest {
 
     @Test
     public void testHistoryPreservesModifiedVersion() {
-        Task originalTask = manager.createTask(new Task("Задача", "Описание", Status.NEW,
-                Duration.ofMinutes(30), LocalDateTime.of(2025, 11,29, 15, 0)));
+        Task originalTask = new Task("Задача", "Описание", Status.NEW,
+                Duration.ofMinutes(30), LocalDateTime.of(2025, 11, 29, 15, 0));
         historyManager.add(originalTask);
 
         Task updateTask = new Task("Измененная задача", "Описание изменено", Status.IN_PROGRESS,
-                Duration.ofMinutes(30), LocalDateTime.of(2025, 11,29, 15, 0));
+                Duration.ofMinutes(30), LocalDateTime.of(2025, 11, 29, 15, 0));
         updateTask.setId(originalTask.getId());
-        manager.updateTask(updateTask);
+
 
         historyManager.add(updateTask);
 

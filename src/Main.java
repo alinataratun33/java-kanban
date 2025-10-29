@@ -1,4 +1,6 @@
 import manager.FileBackedTaskManager;
+import manager.HistoryManager;
+import manager.Managers;
 import tasks.Status;
 import tasks.SubTask;
 import tasks.Task;
@@ -41,7 +43,9 @@ public class Main {
         for (Task taskss : prioritizedTasks) {
             System.out.println(taskss.getName() + " - " + taskss.getStartTime().toLocalTime());
         }
+
         print(manager2);
+
     }
 
     private static void print(FileBackedTaskManager manager) {
