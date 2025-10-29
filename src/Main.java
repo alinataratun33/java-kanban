@@ -24,10 +24,14 @@ public class Main {
         Epic epic = manager.createEpic(new Epic("Эпик с подзадачами", "Описание", Status.NEW,
                 null, null));
 
-        SubTask subTask1 = manager.createSubTask(new SubTask("Подзадача ранняя", "Описание", Status.DONE,
-                Duration.ofMinutes(25), LocalDateTime.of(2025, 11, 25, 7, 0), epic.getId()));
-        SubTask subTask2 = manager.createSubTask(new SubTask("Подзадача поздняя", "Описание", Status.DONE,
-                Duration.ofMinutes(35), LocalDateTime.of(2025, 11, 25, 15, 0), epic.getId()));
+        SubTask subTask1 = manager.createSubTask(new SubTask("Подзадача ранняя", "Описание",
+                Status.DONE,
+                Duration.ofMinutes(25), LocalDateTime.of(2025, 11, 25, 7, 0),
+                epic.getId()));
+        SubTask subTask2 = manager.createSubTask(new SubTask("Подзадача поздняя", "Описание",
+                Status.DONE,
+                Duration.ofMinutes(35), LocalDateTime.of(2025, 11, 25, 15, 0),
+                epic.getId()));
 
         FileBackedTaskManager manager2 = FileBackedTaskManager.loadFromFile(file);
 
