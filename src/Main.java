@@ -1,14 +1,11 @@
 import manager.FileBackedTaskManager;
-import manager.InMemoryTaskManager;
 import tasks.Status;
 import tasks.SubTask;
 import tasks.Task;
 import tasks.Epic;
-
 import java.io.File;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -18,12 +15,12 @@ public class Main {
         System.out.println("Поехали!");
 
         File file = new File("C:\\Users\\MyPC\\Desktop\\tasks.csv");
-     //   InMemoryTaskManager manager1 = new InMemoryTaskManager();
+
         FileBackedTaskManager manager = new FileBackedTaskManager(file);
         Task task1 = manager.createTask(new Task("Задача", "Описание", Status.NEW,
                 Duration.ofMinutes(30), LocalDateTime.of(2025, 11, 25, 10, 0)));
 
-        // Эпик с подзадачами
+
         Epic epic = manager.createEpic(new Epic("Эпик с подзадачами", "Описание", Status.NEW,
                 null, null));
 
