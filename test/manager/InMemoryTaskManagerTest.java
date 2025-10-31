@@ -5,8 +5,10 @@ import tasks.Status;
 import tasks.SubTask;
 import tasks.Task;
 import org.junit.jupiter.api.Test;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
@@ -20,7 +22,7 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
     void testTasksWithPredefinedAndGeneratedIdsDoNotConflict() {
         Task autoIdTask = manager.createTask(createTestTask());
         Task taskWithSetId = new Task("Задача с заданным id", "Описание", Status.NEW,
-                Duration.ofMinutes(30), LocalDateTime.of(2025, 11,29, 15, 0));
+                Duration.ofMinutes(30), LocalDateTime.of(2025, 11, 29, 15, 0));
         taskWithSetId.setId(3);
         manager.createTask(taskWithSetId);
         assertNotEquals(taskWithSetId.getId(), autoIdTask.getId(), "ID задач конфликтуют");
@@ -100,12 +102,23 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
     }
 
     @Test
-    void testOverlap(){
-        Task createdTask = manager.createTask(createTestTask());
-        Task createdTask2 = manager.createTask(createTestTask());
+    void testOverlap() {
+        Task task1 = createTestTask();
+        Task task2 = createTestTask();
+
+
+        Task createdTask1 = manager.createTask(task1);
+        assertNotNull(createdTask1, "Первая задача должна создаться");
+
+        assertThrows(ManagerConflictException.class, () -> {
+            manager.createTask(task2);
+        }, "Должно броситься исключение при создании задачи с пересекающимся временем");
+
 
         assertEquals(1, manager.getAllTasks().size(),
-                "В списке находятся задачи с пересекающимся временем");
+                "В списке должна остаться только одна задача");
+        assertEquals(1, manager.getAllTasks().size(),
+                "В списке должна остаться только одна задача");
     }
 
 }

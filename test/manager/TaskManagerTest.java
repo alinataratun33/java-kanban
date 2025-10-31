@@ -30,7 +30,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
                 "Описание",
                 Status.NEW,
                 Duration.ofMinutes(30),
-                LocalDateTime.of(2025, 11,29, 15, 0)
+                LocalDateTime.of(2025, 11,23, 15, 0)
         );
     }
 
@@ -40,7 +40,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
                 "Описание",
                 Status.NEW,
                 Duration.ofMinutes(30),
-                LocalDateTime.of(2025, 11,29, 15, 0)
+                LocalDateTime.of(2025, 11,21, 15, 0)
         );
     }
 
@@ -50,7 +50,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
                 "Описание",
                 Status.NEW,
                 Duration.ofMinutes(30),
-                LocalDateTime.of(2025, 11,29, 15, 0),
+                LocalDateTime.of(2025, 11,22, 15, 0),
                 epicId
         );
     }
@@ -103,8 +103,11 @@ public abstract class TaskManagerTest<T extends TaskManager> {
 
     @Test
     public void testRemoveAllTasks() {
-        manager.createTask(createTestTask());
-        manager.createTask(createTestTask());
+        Task task1 = createTestTask();
+        Task task2 = new Task("Task2", "Description", Status.NEW, Duration.ofMinutes(11),
+                LocalDateTime.of(2024, 10, 11, 23,44));
+        manager.createTask(task1);
+        manager.createTask(task2);
         assertFalse(manager.getAllTasks().isEmpty(), "Задачи должны существовать");
         manager.removeAllTasks();
         assertTrue(manager.getAllTasks().isEmpty(), "Задачи должны быть удалены");
@@ -123,7 +126,9 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     public void testRemoveAllSubTasks() {
         Epic createdEpic = manager.createEpic(createTestEpic());
         manager.createSubTask(createTestSubTask(createdEpic.getId()));
-        manager.createSubTask(createTestSubTask(createdEpic.getId()));
+        manager.createSubTask(new SubTask("SubTask2", "Description", Status.NEW,
+                Duration.ofMinutes(45), LocalDateTime.of(2025,10, 10, 10,0),
+                createdEpic.getId()));
 
         assertFalse(manager.getAllSubTasks().isEmpty(), "Эпики должны существовать");
         manager.removeAllSubTasks();
