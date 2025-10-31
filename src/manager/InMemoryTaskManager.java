@@ -39,14 +39,14 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task createTask(Task task) {
         if (isConflict(task)) {
-            return task;
+            throw new ManagerConflictException("Задача конфликтует с существующими задачами: " + task);
         }
         int id = generateId();
         task.setId(id);
         tasks.put(id, task);
-        if (task.getStartTime() != null) {
-            prioritizedTasks.add(task);
-        }
+
+        prioritizedTasks.add(task);
+
         return task;
     }
 
@@ -63,7 +63,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public SubTask createSubTask(SubTask subTask) {
         if (isConflict(subTask)) {
-            return subTask;
+            throw new ManagerConflictException("Подзадача конфликтует с существующими задачами: " + subTask);
         }
         if (epics.containsKey(subTask.getEpicId())) {
 
@@ -102,17 +102,22 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void removeAllTasks() {
-        tasks.values().stream().forEach(prioritizedTasks::remove);
-        tasks.keySet().stream().forEach(historyManager::remove);
+        tasks.values().forEach(task -> {
+            prioritizedTasks.remove(task);
+            historyManager.remove(task.getId());
+        });
         tasks.clear();
     }
 
     @Override
     public void removeAllSubTasks() {
-        subTasks.values().stream().forEach(prioritizedTasks::remove);
-        subTasks.keySet().stream().forEach(historyManager::remove);
+        subTasks.values().forEach(subTask -> {
+            prioritizedTasks.remove(subTask);
+            historyManager.remove(subTask.getId());
+        });
         subTasks.clear();
-        epics.values().stream().forEach(epic -> {
+
+        epics.values().forEach(epic -> {
             epic.clearSubTasks();
             updateEpicStatus(epic);
             updateDateTimeEpic(epic);
@@ -121,9 +126,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void removeAllEpics() {
-        epics.values().stream().forEach(prioritizedTasks::remove);
-        epics.keySet().stream().forEach(historyManager::remove);
+        epics.keySet().forEach(historyManager::remove);
         epics.clear();
+
         removeAllSubTasks();
     }
 
@@ -150,11 +155,12 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateTask(Task task) {
         if (tasks.containsKey(task.getId())) {
-            prioritizedTasks.remove(tasks.get(task.getId()));
 
-            if (!isConflict(task)) {
+            if (isConflict(task)) {
+                throw new ManagerConflictException("Обновленная задача конфликтует с существующими задачами: " + task);
+            } else {
+                prioritizedTasks.remove(tasks.get(task.getId()));
                 tasks.put(task.getId(), task);
-
                 if (task.getStartTime() != null) {
                     prioritizedTasks.add(task);
                 }
@@ -170,10 +176,12 @@ public class InMemoryTaskManager implements TaskManager {
             Integer currentEpicId = currentSubTask.getEpicId();
             Integer newEpicId = subTask.getEpicId();
 
-            prioritizedTasks.remove(currentSubTask);
-
             if (newEpicId.equals(currentEpicId)) {
-                if (!isConflict(subTask)) {
+                if (isConflict(subTask)) {
+                    throw new ManagerConflictException("Обновленная подзадача конфликтует с существующими задачами: "
+                            + subTask);
+                } else {
+                    prioritizedTasks.remove(currentSubTask);
                     subTasks.put(subTask.getId(), subTask);
                     prioritizedTasks.add(subTask);
                     Epic epic = epics.get(subTask.getEpicId());
@@ -207,9 +215,12 @@ public class InMemoryTaskManager implements TaskManager {
     public void removeEpicById(int id) {
         if (epics.containsKey(id)) {
             Epic currentEpic = epics.get(id);
-            currentEpic.getSubTaskIds().stream()
+            currentEpic.getSubTaskIds()
                     .forEach(subId -> {
-                        subTasks.remove(subId);
+                        SubTask subTask = subTasks.remove(subId);
+                        if (subTask != null) {
+                            prioritizedTasks.remove(subTask);
+                        }
                         historyManager.remove(subId);
                     });
             epics.remove(id);
@@ -224,7 +235,7 @@ public class InMemoryTaskManager implements TaskManager {
             SubTask subTask = subTasks.get(id);
             int epicId = subTask.getEpicId();
 
-            prioritizedTasks.remove(subTasks.get(id));
+            prioritizedTasks.remove(subTask);
             subTasks.remove(id);
             historyManager.remove(id);
 
@@ -292,15 +303,13 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     private void updateDateTimeEpic(Epic epic) {
-        if (epic.getSubTaskIds().isEmpty()) {
-            epic.setStartTime(epic.getStartTime());
-            epic.setDuration(epic.getDuration());
-            return;
-        }
+        epic.setStartTime(null);
+        epic.setDuration(null);
+        epic.endTime(null);
+
         LocalDateTime min = null;
         LocalDateTime max = null;
         Duration sumDuration = Duration.ZERO;
-
 
         for (Integer subId : epic.getSubTaskIds()) {
             SubTask currentSubTask = subTasks.get(subId);
@@ -314,17 +323,11 @@ public class InMemoryTaskManager implements TaskManager {
                 if (max == null || endTime.isAfter(max)) {
                     max = endTime;
                 }
-
             }
-
         }
-        if (min != null) {
-            epic.setDuration(sumDuration);
-            epic.setStartTime(min);
-        }
-        if (max != null) {
-            epic.endTime(max);
-        }
+        epic.setDuration(sumDuration);
+        epic.setStartTime(min);
+        epic.endTime(max);
     }
 
     protected void addTaskFromFile(Task task) {
@@ -370,6 +373,9 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     private boolean isConflict(Task newTask) {
+        if (newTask.getStartTime() == null) {
+            return false;
+        }
         List<Task> conflictingTasks = getPrioritizedTasks().stream()
                 .filter(task -> task.getId() != newTask.getId())
                 .filter(task -> isTimeOverlap(newTask, task))

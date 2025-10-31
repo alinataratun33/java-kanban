@@ -26,19 +26,6 @@ public class SubTask extends Task {
 
     @Override
     public String toString() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
-
-        String startTimeStr = "";
-        if (getStartTime() != null) {
-            startTimeStr = getStartTime().format(formatter);
-        }
-
-        long durationMinutes = 0;
-        if (getDuration() != null) {
-            durationMinutes = getDuration().toMinutes();
-        }
-        return String.format("%d,%s,%s,%s,%s,%d,%s,%d",
-                getId(), getType(), getName(), getStatus(), getDescription(),
-                durationMinutes, startTimeStr, epicId);
+        return super.toString()+ "," + epicId;
     }
 }
