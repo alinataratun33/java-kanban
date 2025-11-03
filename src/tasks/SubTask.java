@@ -2,14 +2,18 @@ package tasks;
 
 import manager.TypeTask;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 public class SubTask extends Task {
 
     private int epicId;
 
-    public SubTask(String name, String description, Status status, int epicId) {
-        super(name, description, status);
+    public SubTask(String name, String description, Status status, Duration duration, LocalDateTime startTime, int epicId) {
+        super(name, description, status, duration, startTime);
         this.epicId = epicId;
     }
+
 
     public int getEpicId() {
         return epicId;
@@ -21,7 +25,6 @@ public class SubTask extends Task {
 
     @Override
     public String toString() {
-        return String.format("%d,%s,%s,%s,%s,%d",
-                id, getType(), name, status, description, epicId);
+        return super.toString() + "," + epicId;
     }
 }
