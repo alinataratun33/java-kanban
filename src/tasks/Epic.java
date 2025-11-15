@@ -10,7 +10,7 @@ import java.util.List;
 
 public class Epic extends Task {
 
-    private final List<Integer> subTaskIds;
+    private List<Integer> subTaskIds;
     private LocalDateTime endTime;
 
     public Epic(String name, String description, Status status, Duration duration, LocalDateTime startTime) {
@@ -20,8 +20,12 @@ public class Epic extends Task {
 
 
     public List<Integer> getSubTaskIds() {
-        return new ArrayList<>(subTaskIds);
+        if (subTaskIds == null) {
+            subTaskIds = new ArrayList<>();
+        }
+        return subTaskIds;
     }
+
 
     public void deleteSubTask(Integer subTaskId) {
         if (!subTaskIds.contains(subTaskId)) {

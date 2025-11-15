@@ -2,6 +2,7 @@ package tasks;
 
 import manager.Managers;
 import manager.TaskManager;
+import manager.TypeTask;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,9 +35,19 @@ class SubTaskTest {
 
     @Test
     public void subTaskCannotBeEpic() {
-        SubTask subTask = new SubTask("SubTask", "Description", Status.NEW,Duration.ofMinutes(30),
-                LocalDateTime.of(2025, 11,29, 15, 0), 1);
+        Epic epic = new Epic("Test Epic", "Description", Status.NEW, null, null);
+        Epic createdEpic = manager.createEpic(epic);
+
+
+        SubTask subTask = new SubTask("SubTask", "Description", Status.NEW, Duration.ofMinutes(30),
+                LocalDateTime.of(2025, 11, 29, 15, 0), createdEpic.getId());
+
         manager.createSubTask(subTask);
-        assertTrue(manager.getAllSubTasks().isEmpty(), "Подзадача добавлена как эпик");
+
+
+        assertFalse(manager.getAllSubTasks().isEmpty(), "Подзадача должна быть добавлена");
+        SubTask retrievedSubTask = manager.getAllSubTasks().get(0);
+        assertEquals(TypeTask.SUBTASK, retrievedSubTask.getType(), "Тип задачи должен быть SUBTASK");
+        assertNotEquals(TypeTask.EPIC, retrievedSubTask.getType(), "Тип задачи не должен быть EPIC");
     }
 }
