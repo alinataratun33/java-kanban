@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import manager.ManagerConflictException;
+import manager.NotFoundException;
 import manager.TaskManager;
 import tasks.Task;
 
@@ -46,33 +47,43 @@ public class TasksHandler extends BaseHttpHandler {
                 handleDeleteRequest(path, exchange);
                 break;
             default:
-                System.out.println("Ошибка");
+                sendBadRequest(exchange, "Метод некорректен");
         }
     }
 
     private void handleGetRequest(String path, HttpExchange exchange) throws IOException {
-        if (path.equals("/tasks")) {
-            List<Task> tasks = taskManager.getAllTasks();
-            String tasksJson = gson.toJson(tasks);
-            sendText(exchange, tasksJson, 200);
-        } else if (path.matches("/tasks/\\d+")) {
-            String[] pathParts = path.split("/");
-            int id = Integer.parseInt(pathParts[2]);
-            Task task = taskManager.getTaskById(id);
-            String taskJson = gson.toJson(task);
-            sendText(exchange, taskJson, 200);
-        } else {
+        try {
+            if (path.equals("/tasks")) {
+                List<Task> tasks = taskManager.getAllTasks();
+                String tasksJson = gson.toJson(tasks);
+                sendText(exchange, tasksJson, 200);
+            } else if (path.matches("/tasks/\\d+")) {
+                Integer id = parseIdFromPath(path, exchange);
+                if (id == null) return;
+
+                Task task = taskManager.getTaskById(id);
+                String taskJson = gson.toJson(task);
+                sendText(exchange, taskJson, 200);
+            } else {
+                sendBadRequest(exchange, "Некорректный путь");
+            }
+        } catch (NotFoundException e) {
             sendNotFound(exchange);
+        } catch (Exception e) {
+            sendBadRequest(exchange, "Ошибка при обработке запроса");
         }
     }
 
-    private void handlePostRequest(String path, HttpExchange exchange) throws IOException {
-        if (path.equals("/tasks")) {
-            InputStream inputStream = exchange.getRequestBody();
-            String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 
-            try {
+    private void handlePostRequest(String path, HttpExchange exchange) throws IOException {
+        try {
+            if (path.equals("/tasks")) {
+                InputStream inputStream = exchange.getRequestBody();
+                String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+
+
                 Task task = gson.fromJson(body, Task.class);
+
 
                 if (task.getId() != 0) {
                     taskManager.updateTask(task);
@@ -83,22 +94,41 @@ public class TasksHandler extends BaseHttpHandler {
                     String responseJson = gson.toJson(createdTask);
                     sendText(exchange, responseJson, 201);
                 }
-
-            } catch (ManagerConflictException e) {
-                sendHasInteractions(exchange);
             }
+        } catch (ManagerConflictException e) {
+            sendHasInteractions(exchange);
+        } catch (NotFoundException e) {
+            sendNotFound(exchange);
         }
     }
 
+
     private void handleDeleteRequest(String path, HttpExchange exchange) throws IOException {
-        if (path.matches("/tasks/\\d+")) {
+        try {
+            if (path.matches("/tasks/\\d+")) {
+                Integer id = parseIdFromPath(path, exchange);
+                if (id == null) return;
+
+                taskManager.removeTaskById(id);
+                sendText(exchange, "Задача с ID " + id + " удалена", 200);
+            } else if (path.equals("/tasks")) {
+                taskManager.removeAllTasks();
+                sendText(exchange, "Все задачи удалены", 200);
+            }
+        } catch (NotFoundException e) {
+            sendNotFound(exchange);
+        } catch (Exception e) {
+            sendBadRequest(exchange, "Ошибка при обработке запроса");
+        }
+    }
+
+    private Integer parseIdFromPath(String path, HttpExchange exchange) throws IOException {
+        try {
             String[] pathParts = path.split("/");
-            int id = Integer.parseInt(pathParts[2]);
-            taskManager.removeTaskById(id);
-            sendText(exchange, "Задача с ID " + id + " удалена", 200);
-        } else if (path.equals("/tasks")) {
-            taskManager.removeAllTasks();
-            sendText(exchange, "Все задачи удалены", 200);
+            return Integer.parseInt(pathParts[2]);
+        } catch (NumberFormatException e) {
+            sendBadRequest(exchange, "Некорректный формат ID");
+            return null;
         }
     }
 }

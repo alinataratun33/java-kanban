@@ -30,7 +30,7 @@ public class HttpServerTest {
 
     public HttpServerTest() throws IOException {
         this.manager = new InMemoryTaskManager();
-        this.taskServer = new HttpTaskServer(manager);
+        this.taskServer = new HttpTaskServer(manager, 8080);
         this.gson = createGson();
     }
 

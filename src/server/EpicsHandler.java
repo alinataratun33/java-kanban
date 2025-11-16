@@ -3,6 +3,7 @@ package server;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
+import manager.NotFoundException;
 import manager.TaskManager;
 import tasks.Epic;
 import tasks.SubTask;
@@ -46,43 +47,52 @@ public class EpicsHandler extends BaseHttpHandler {
                 handleDeleteRequest(path, exchange);
                 break;
             default:
-                System.out.println("Ошибка");
+                sendBadRequest(exchange, "Метод некорректен");
         }
     }
 
     private void handleGetRequest(String path, HttpExchange exchange) throws IOException {
-        if (path.equals("/epics")) {
-            List<Epic> epics = taskManager.getAllEpics();
-            String epicsJson = gson.toJson(epics);
-            sendText(exchange, epicsJson, 200);
-        } else if (path.matches("/epics/\\d+")) {
-            String[] pathParts = path.split("/");
-            int id = Integer.parseInt(pathParts[2]);
-            Epic epic = taskManager.getEpicById(id);
+        try {
+            if (path.equals("/epics")) {
+                List<Epic> epics = taskManager.getAllEpics();
+                String epicsJson = gson.toJson(epics);
+                sendText(exchange, epicsJson, 200);
+            } else if (path.matches("/epics/\\d+")) {
+                Integer id = parseIdFromPath(path, exchange);
+                if (id == null) return;
 
-            String epicJson = gson.toJson(epic);
-            sendText(exchange, epicJson, 200);
+                Epic epic = taskManager.getEpicById(id);
+                String epicJson = gson.toJson(epic);
+                sendText(exchange, epicJson, 200);
 
-        } else if (path.matches("/epics/\\d+/subtasks")) {
-            String[] pathParts = path.split("/");
-            int id = Integer.parseInt(pathParts[2]);
-            List<SubTask> subTasks = taskManager.getSubTasksForEpic(id);
-            String subTaskJson = gson.toJson(subTasks);
-            sendText(exchange, subTaskJson, 200);
-        } else {
+            } else if (path.matches("/epics/\\d+/subtasks")) {
+                Integer id = parseIdFromPath(path, exchange);
+                if (id == null) return;
+
+                List<SubTask> subTasks = taskManager.getSubTasksForEpic(id);
+                String subTaskJson = gson.toJson(subTasks);
+                sendText(exchange, subTaskJson, 200);
+            } else {
+                sendBadRequest(exchange, "Некорректный путь");
+            }
+        } catch (NotFoundException e) {
             sendNotFound(exchange);
+        } catch (Exception e) {
+            sendBadRequest(exchange, "Ошибка при обработке запроса");
         }
+
     }
 
     private void handlePostRequest(String path, HttpExchange exchange) throws IOException {
-        if (path.equals("/epics")) {
-            InputStream inputStream = exchange.getRequestBody();
-            String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        try {
+            if (path.equals("/epics")) {
+                InputStream inputStream = exchange.getRequestBody();
+                String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 
-            try {
                 Epic epic = gson.fromJson(body, Epic.class);
                 if (epic == null) {
                     sendNotFound(exchange);
+                    return;
                 }
                 if (epic.getId() != 0) {
                     taskManager.updateEpic(epic);
@@ -94,21 +104,41 @@ public class EpicsHandler extends BaseHttpHandler {
                     sendText(exchange, responseJson, 201);
                 }
 
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
             }
+        } catch (NotFoundException e) {
+            sendNotFound(exchange);
+        } catch (Exception e) {
+            sendBadRequest(exchange, "Ошибка при обработке запроса: ");
         }
+
     }
 
     private void handleDeleteRequest(String path, HttpExchange exchange) throws IOException {
-        if (path.matches("/epics/\\d+")) {
+        try {
+            if (path.matches("/epics/\\d+")) {
+                Integer id = parseIdFromPath(path, exchange);
+                if (id == null) return;
+
+                taskManager.removeEpicById(id);
+                sendText(exchange, "Эпик с ID " + id + " удален", 200);
+            } else if (path.equals("/epics")) {
+                taskManager.removeAllEpics();
+                sendText(exchange, "Все эпики удалены", 200);
+            }
+        } catch (NotFoundException e) {
+            sendNotFound(exchange);
+        } catch (Exception e) {
+            sendBadRequest(exchange, "Ошибка при обработке запроса");
+        }
+    }
+
+    private Integer parseIdFromPath(String path, HttpExchange exchange) throws IOException {
+        try {
             String[] pathParts = path.split("/");
-            int id = Integer.parseInt(pathParts[2]);
-            taskManager.removeEpicById(id);
-            sendText(exchange, "Эпик с ID " + id + " удален", 200);
-        } else if (path.equals("/epics")) {
-            taskManager.removeAllEpics();
-            sendText(exchange, "Все эпики удалены", 200);
+            return Integer.parseInt(pathParts[2]);
+        } catch (NumberFormatException e) {
+            sendBadRequest(exchange, "Некорректный формат ID");
+            return null;
         }
     }
 }

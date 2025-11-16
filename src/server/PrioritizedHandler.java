@@ -36,6 +36,8 @@ public class PrioritizedHandler extends BaseHttpHandler {
             List<Task> prioritized = taskManager.getPrioritizedTasks();
             String prioritizedJson = gson.toJson(prioritized);
             sendText(exchange, prioritizedJson, 200);
+        } else {
+            sendBadRequest(exchange, "Некорректный метод");
         }
     }
 }

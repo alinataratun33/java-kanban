@@ -29,4 +29,8 @@ public abstract class BaseHttpHandler implements HttpHandler {
     protected void sendHasInteractions(HttpExchange exchange) throws IOException {
         sendText(exchange, "Задача пересекается с другими задачами", 406);
     }
+
+    protected void sendBadRequest(HttpExchange exchange, String message) throws IOException {
+        sendText(exchange, message, 400);
+    }
 }

@@ -13,14 +13,15 @@ public class HttpTaskServer {
     private final TaskManager manager;
     private final HttpServer httpServer;
 
-    public HttpTaskServer(TaskManager manager) throws IOException {
+
+    public HttpTaskServer(TaskManager manager, int port) throws IOException {
         this.manager = manager;
-        this.httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
+        this.httpServer = HttpServer.create(new InetSocketAddress(port), 0);
         configure();
     }
 
     public HttpTaskServer() throws IOException {
-        this(Managers.getDefault());
+        this(Managers.getDefault(), PORT);
     }
 
     public void configure() {

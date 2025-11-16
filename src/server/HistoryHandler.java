@@ -36,6 +36,8 @@ public class HistoryHandler extends BaseHttpHandler {
             List<Task> history = taskManager.getHistory();
             String historyJson = gson.toJson(history);
             sendText(exchange, historyJson, 200);
+        } else {
+            sendBadRequest(exchange, "Некорректный метод");
         }
     }
 }
