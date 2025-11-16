@@ -98,7 +98,11 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         int idSubTaskForRemove = subTaskForRemove.getId();
         manager.removeSubTaskById(idSubTaskForRemove);
 
-        assertNull(manager.getSubTaskById(idSubTaskForRemove), "ID удаленной подзадачи сохранилось");
+        Epic updatedEpic = manager.getEpicById(createdEpic.getId());
+
+
+        assertFalse(updatedEpic.getSubTaskIds().contains(idSubTaskForRemove),
+                "Эпик не должен содержать ID удаленной подзадачи");
     }
 
     @Test
